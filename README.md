@@ -66,7 +66,7 @@ dmesg --console-off
 $ sudo mv /etc/motd /etc/motd.old
 $ sudo touch /etc/motd
 $ sudo update-rc.d motd remove
-$ touch /home/pi/.hushlogin
+$ touch /home/dev/.hushlogin
 ```
 
 ## 3. Cambiar el auto login
@@ -86,7 +86,7 @@ ExecStart=-/sbin/agetty --skip-login --noclear --noissue --login-options "-f pi"
 ## 4. Poner logo de inmote al inicio
 ### 4.1 Instalar plymouth
 ```bash 
-$ scp 180x180.png pi@192.168.1.240:/home/pi/
+$ scp splash/180x180.png dev@192.168.1.240:/home/dev/
 ```
 ```bash 
 $ sudo apt-get install plymouth plymouth-themes pix-plym-splash -y
@@ -95,7 +95,7 @@ $ sudo plymouth-set-default-theme pix
 
 ```bash 
 $ sudo cp /usr/share/plymouth/themes/pix/splash.png /usr/share/plymouth/themes/pix/splash.old.png
-$ sudo cp /home/pi/180x180.png /usr/share/plymouth/themes/pix/splash.png
+$ sudo cp /home/dev/180x180.png /usr/share/plymouth/themes/pix/splash.png
 ```
 
 ### 4.2 Borrar texto del splash screen
@@ -118,14 +118,38 @@ message_sprite.SetImage(my_image);
 ### Transferir /boot/config.txt a rpi
 Transferir por scp el archivo /boot/config.txt
 ```bash 
-$ scp boot/config.txt pi@192.168.1.158:/home/pi/
+$ scp boot/config.txt dev@192.168.1.158:/home/dev/
 ```
 ```bash 
 $ sudo mv /boot/config.txt /boot/config.old.txt
-$ sudo cp /home/pi/config.txt /boot/config.txt
-$ rm /home/pi/config.txt
+$ sudo cp /home/dev/config.txt /boot/config.txt
+$ rm /home/dev/config.txt
+```
+# Configurar interfaz de red
+## 1. Instalar ifplugd
+```bash
+$ sudo apt-get install ifplugd
+```
+Esta configuración se hace para apagar el wlan si hay un cable de red conectado
+```bash 
+$ scp etc/ifplugd/action.d/ifupdown dev@192.168.1.158:/home/dev/
+```
+```bash 
+$ sudo cp /home/dev/ifupdown /etc/ifplugd/action.d/ifupdown
 ```
 
+Ahora debemos ejecutar el proceso de ifplugd en el arranque del dispositivo, para esto debemos añadir las siguientes lineas antes del exit 0 en el archivo `/etc/rc.local`
+```bash
+# Start ifplugd daemon to connect or disconect the wlan0 interface
+ifplugd
+```
+
+Este archivo debe terminar de la siguiente forma
+```bash
+# Start ifplugd daemon to connect or disconect the wlan0 interface
+ifplugd
+exhit 0
+```
 # Instalar servidor X
 
 ## 1. instalar servidor x
@@ -159,7 +183,7 @@ $ npm install -g electron@1.7.9 --unsafe-perm=true --allow-root
 ## 3. Transferir el proyecto inmote al raspberry 
 Transferir por scp el archivo zip de inmote
 ```bash 
-$ scp release-1.23.6.zip pi@192.168.1.158:/home/pi/
+$ scp release-1.23.6.zip dev@192.168.1.158:/home/dev/
 ```
 ```bash 
 $ mkdir inmote && mv release-1.23.6.zip inmote && cd inmote
@@ -168,18 +192,18 @@ $ rm release-1.23.6.zip
 ```
 ## 4. Crear .xinitrc
 ```bash 
-$ vim /home/pi/.xinitrc
+$ vim /home/dev/.xinitrc
 
 #!/bin/sh
-$(which electron) /home/pi/inmote/main.js
+$(which electron) /home/dev/inmote/main.js
 ```
 
 ## 5. Añadir la siguiente linea a .bashrc para iniciar automáticamente inmote 
 ```bash 
-$ echo "while :">>/home/pi/.bashrc
-$ echo "do">>/home/pi/.bashrc
-$ echo "startx -- -nocursor 2>/dev/null >/dev/null">>/home/pi/.bashrc
-$ echo "done">>/home/pi/.bashrc
+$ echo "while :">>/home/dev/.bashrc
+$ echo "do">>/home/dev/.bashrc
+$ echo "startx -- -nocursor 2>/dev/null >/dev/null">>/home/dev/.bashrc
+$ echo "done">>/home/dev/.bashrc
 ```
 
 ## Instalar XTER para Desarrollo

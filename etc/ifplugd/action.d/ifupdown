@@ -1,0 +1,16 @@
+#!/bin/sh
+set -e
+
+case "$2" in
+up)
+	# echo "down!">/tmp/netstatus
+	/sbin/iwconfig wlan0 txpower off
+	/sbin/ifconfig wlan0 down
+	;;
+down)
+	# echo "up!!">/tmp/netstatus
+	/sbin/iwconfig wlan0 txpower auto || /sbin/iwconfig wlan0 txpower auto 
+	/sbin/ifconfig wlan0 up
+	;;
+esac
+
