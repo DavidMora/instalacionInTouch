@@ -330,7 +330,7 @@ $ echo "export UPDATER_OTA_MBED_PATH=/home/pi/software/mbedtls">>/home/pi/.bashr
 $ echo "export UPDATER_OTA_FILES=/home/pi/software/updater-files">>/home/pi/.bashrc
 $ echo "export UPDATER_OTA_FIRMWARES=/home/pi/software/firmwares">>/home/pi/.bashrc
 ```
-Ahora debemos crear las carpetas que serán usadas pors las variables de entorno
+Ahora debemos crear las carpetas que serán usadas por las variables de entorno
 ```bash
 $ mkdir -p /home/pi/software/updater-files
 $ mkdir -p /home/pi/software/firmwares
@@ -344,21 +344,18 @@ $ crontab -e
 ```
 Luego se deben añadir los siguientes jobs
 ```bash
-0 3 * * * $(which python) /home/pi/software/in-updater/main.pyc # Ejecuta rutinca de autenticación
-10 3 * * * $(which python) /home/pi/software/in-updater/update.pyc # Corre rutina de update
+0 3 * * * $(which python) /home/pi/software/in-updater/main.pyc # Ejecuta rutinca de autenticación a las 3 de la mañana
+5 3 * * * $(which python) /home/pi/software/in-updater/update.pyc # Corre rutina de update a las 3 y 5 de la mañana
 ```
 
-## 3. Transferir el proyecto inmote al raspberry 
-Transferir por scp el archivo zip de inmote
-```bash 
-$ scp release-1.23.6.zip pi@192.168.1.158:/home/pi/
+## 12. Instalar inmote
+Debemos ejecutar los siguientes comandos, esto registrará la cosa en la nube, le dará autenticación y descargará el firmware de inmote en la carpeta definida por la variable de entorno `UPDATER_OTA_INMOTE`
+```bash
+$ python /home/pi/software/in-updater/main.pyc
+$ python /home/pi/software/in-updater/update.pyc
 ```
-```bash 
-$ mkdir inmote && mv release-1.23.6.zip inmote && cd inmote
-$ unzip release-1.23.6.zip
-$ rm release-1.23.6.zip
-```
-## 4. Crear .xinitrc
+
+## 13. Crear .xinitrc
 ```bash 
 $ vim /home/pi/.xinitrc
 
@@ -366,7 +363,7 @@ $ vim /home/pi/.xinitrc
 $(which electron) /home/pi/inmote/main.js
 ```
 
-## 5. Añadir la siguiente linea a .bashrc para iniciar automáticamente inmote 
+## 14. Añadir la siguiente linea a .bashrc para iniciar automáticamente inmote 
 ```bash 
 $ echo "while :">>/home/pi/.bashrc
 $ echo "do">>/home/pi/.bashrc
