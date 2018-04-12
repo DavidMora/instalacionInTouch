@@ -111,6 +111,12 @@ if ! shopt -oq posix; then
     . /etc/bash_completion
   fi
 fi
+export UPDATER_OTA_INMOTE=/home/pi/software/inmote
+export UPDATER_OTA_INAUTH_URL=https://inmote.api.insite.com.co:4500
+export UPDATER_OTA_CERTIFICATE_PATH=/home/pi/software/certificates
+export UPDATER_OTA_MBED_PATH=/home/pi/software/mbedtls
+export UPDATER_OTA_FILES=/home/pi/software/updater-files
+export UPDATER_OTA_FIRMWARES=/home/pi/software/firmwares
 while :
 do
 	startx -- -nocursor 2>/dev/null >/dev/null
