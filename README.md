@@ -198,7 +198,7 @@ exhit 0
 ```bash 
 $ sudo apt-get --no-install-recommends install xserver-xorg xserver-xorg-video-fbdev xinit pciutils xinput xfonts-100dpi xfonts-75dpi xfonts-scalable -y
 
-$ sudo apt-get install libgtk2.0-0 libxrender1 libxtst6 libxi6 libxss-dev libgconf-2-4 libasound2 libnss3-dev -y
+$ sudo apt-get install libgtk2.0-0 libgtk-3-0 libxrender1 libxtst6 libxi6 libxss-dev libgconf-2-4 libasound2 libnss3-dev libpangocairo-1.0-0 -y
 
 $ sudo apt-get install -y mesa-utils libgl1-mesa-glx
 ```
@@ -217,11 +217,10 @@ $ rm node-v8.11.1-linux-armv6l.tar.gz
 ```
 
 ## 2. Instalar Electron
-La versión 1.7.9 es funcional para rasberry
+La versión 2.0.0 es funcional para rasberry y tiene corregido el problema de que las peticiones ajax bloquean electorn
 ```bash
-$ npm install -g electron@1.7.9 --unsafe-perm=true --allow-root
+$ npm install -g electron@2.0.0--unsafe-perm=true --allow-root
 ```
-
 # Instalar software de dependencias de INUPDATER
 
 Se dene revisar el archivo requirements.txt del repositorio `linuxOTAComptiblwUpdater`
@@ -329,25 +328,57 @@ $ echo "export UPDATER_OTA_CERTIFICATE_PATH=/home/pi/software/certificates">>/ho
 $ echo "export UPDATER_OTA_MBED_PATH=/home/pi/software/mbedtls">>/home/pi/.bashrc
 $ echo "export UPDATER_OTA_FILES=/home/pi/software/updater-files">>/home/pi/.bashrc
 $ echo "export UPDATER_OTA_FIRMWARES=/home/pi/software/firmwares">>/home/pi/.bashrc
+$ echo "export UPDATER_OTA_UPDATE_FILE=/home/pi/software/updates.txt">>/home/pi/.bashrc
+$ echo "export UPDATER_OTA_CRON_UPDATE_FILE=/home/pi/software/runUpdate">>/home/pi/.bashrc
+$ echo "export UPDATER_OTA_CRON_AUTH_FILE=/home/pi/software/runAuth">>/home/pi/.bashrc
 ```
-Ahora debemos crear las carpetas que serán usadas por las variables de entorno
+Ahora debemos crear las carpetas y los archivos que serán usadas por las variables de entorno
 ```bash
 $ mkdir -p /home/pi/software/updater-files
 $ mkdir -p /home/pi/software/firmwares
+$ touch /home/pi/software/updates.txt
 ```
 **Es muy importante NO terminar las rutas, tanto URL como de archivo con un `/` al final**
 
 ## 11. Crear cron Job para updater
+### Primero se debe crear el archivo de ejecución del updater
+```bash 
+$ vim /home/pi/software/runAuth
+
+#!/bin/sh
+$(which python) /home/pi/software/in-updater/main.pyc
+```
+
+```bash 
+$ vim /home/pi/software/runUpdate
+
+#!/bin/sh
+$(which python) /home/pi/software/in-updater/update.pyc
+```
+
+### Ahora crear la carpeta para el firmware de actualización
+```bash
+$ mkdir -p /home/pi/software/in-updater2
+```
+
+
 Ejecutar 
 ```bash
 $ crontab -e
 ```
 Luego se deben añadir los siguientes jobs
 ```bash
-0 3 * * * $(which python) /home/pi/software/in-updater/main.pyc # Ejecuta rutinca de autenticación a las 3 de la mañana
-5 3 * * * $(which python) /home/pi/software/in-updater/update.pyc # Corre rutina de update a las 3 y 5 de la mañana
+0 3 * * * sh /home/pi/software/runAuth # Ejecuta rutinca de autenticación a las 3 de la mañana
+5 3 * * * sh /home/pi/software/runUpdate # Corre rutina de update a las 3 y 5 de la mañana
 ```
-
+## 12. Declarar archivo raspberry para inmote
+Para que inmote sepa que está corriendo en un raspberry es necesario declarar el siguiente archivo
+```bash
+$ echo "yesiam">/home/imraspberry
+$ sudo chown pi:pi /home/imraspberry
+$ sudo chmod 766 /home/imraspberry
+```
+Este archivo debe ser 
 ## 12. Instalar inmote
 Debemos ejecutar los siguientes comandos, esto registrará la cosa en la nube, le dará autenticación y descargará el firmware de inmote en la carpeta definida por la variable de entorno `UPDATER_OTA_INMOTE`
 ```bash
@@ -360,7 +391,7 @@ $ python /home/pi/software/in-updater/update.pyc
 $ vim /home/pi/.xinitrc
 
 #!/bin/sh
-$(which electron) /home/pi/inmote/main.js
+$(which electron) /home/pi/software/inmote/main.js
 ```
 
 ## 14. Añadir la siguiente linea a .bashrc para iniciar automáticamente inmote 
