@@ -164,6 +164,17 @@ $ sudo mv /boot/config.txt /boot/config.old.txt
 $ sudo cp /home/pi/config.txt /boot/config.txt
 $ rm /home/pi/config.txt
 ```
+# Apagar luz de la pantalla
+Para apagar la luz de la pantalla se debe ejecutar el siguiente comando somo sudo
+```bash
+echo 1 > /sys/class/backlight/rpi_backlight/bl_power
+```
+
+Para apagarla
+```bash
+echo 0 > /sys/class/backlight/rpi_backlight/bl_power
+```
+
 # Configurar interfaz de red
 ## 1. Instalar ifplugd
 ```bash
@@ -219,7 +230,7 @@ $ rm node-v8.11.1-linux-armv6l.tar.gz
 ## 2. Instalar Electron
 La versión 2.0.0 es funcional para rasberry y tiene corregido el problema de que las peticiones ajax bloquean electorn
 ```bash
-$ npm install -g electron@2.0.0--unsafe-perm=true --allow-root
+$ npm install -g electron@2.0.0 --unsafe-perm=true --allow-root
 ```
 # Instalar software de dependencias de INUPDATER
 
