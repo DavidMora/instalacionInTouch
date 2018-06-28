@@ -1,0 +1,6 @@
+auto lo
+iface lo inet loopback
+allow-hotplug eth0
+wpa-conf /etc/wpa-supplicant/wpa-supplicant.conf
+
+auto wlan0

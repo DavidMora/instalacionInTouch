@@ -15,7 +15,7 @@ Desmonrar la imagen
 $ sudo diskutil unmountDisk /dev/<NAME OF DISK>
 ```
 
-`<NAME OF DISK>` puede ser disk4 por ejemplo.
+`<NAME OF DISK>` puede ser disk4 por ejemplo.`
 
 Copiar la imagen a la SD
 ```sh
@@ -26,6 +26,20 @@ $ sudo dd bs=1m if=2018-03-13-raspbian-stretch.img of=/dev/r<NAME OF DISK> conv=
 ## 1. Actualizar Raspberry
 ```bash
 sudo apt-get update
+sudo apt-get install vim -y
+```
+## 2 Expandir sistema de archivos
+Ejecutar
+```bash
+$ sudo raspi-config
+```
+Luego en la ventana emergente.
+- Advanced Options
+- Expand Filesystem
+
+ahora debemos reiniciar el raspberry
+```bash
+$ sudo reboot
 ```
 # Configuración de usuarios
 ## 1. Crear usuario DEV
@@ -116,12 +130,13 @@ $ sudo plymouth-set-default-theme pix
 ```
 ### 4.2 Copiar imagen de icono
 ```bash 
-$ scp splash/180x180.png pi@192.168.1.240:/home/pi/
+$ scp 180x180.png pi@192.168.1.240:/home/pi/
 ```
 
 ```bash 
 $ sudo cp /usr/share/plymouth/themes/pix/splash.png /usr/share/plymouth/themes/pix/splash.old.png
 $ sudo cp /home/pi/180x180.png /usr/share/plymouth/themes/pix/splash.png
+$ rm /home/pi/180x180.png
 ```
 
 ### 4.3 Borrar texto del splash screen
@@ -129,7 +144,7 @@ $ sudo cp /home/pi/180x180.png /usr/share/plymouth/themes/pix/splash.png
 ### El archivo pix.script se encuentra en la carpeta `usr/share/plymouth/themes/pix/pix.script` de este repositorio
 
 ```bash 
-$ vim /usr/share/plymouth/themes/pix/pix.script
+$ sudo vim /usr/share/plymouth/themes/pix/pix.script
 ```
 
 Comentar las siguientes lineas
@@ -190,6 +205,28 @@ $ sudo cp /home/pi/ifupdown /etc/ifplugd/action.d/ifupdown
 
 Ahora debemos ejecutar el proceso de ifplugd en el arranque del dispositivo, para esto debemos añadir las siguientes lineas antes del exit 0 en el archivo `/etc/rc.local`
 
+```bash 
+_IP=$(hostname -I) || true
+if [ "$_IP" ]; then
+  printf "My IP address is %s\n" "$_IP"
+fi
+#Suppress Kernel Messages
+dmesg --console-off
+#Start daemon for ifplugd to connect or disconect wlan0
+ifplugd
+exit 0
+```
+## 2. Configurar archivo de interfaces
+El archivo de interfaces `/etc/network/interfaces` debe quedar de la siguiente forma 
+```bash
+auto lo
+iface lo inet loopback
+allow-hotplug eth0
+wpa-conf /etc/wpa-supplicant/wpa-supplicant.conf
+
+auto wlan0
+```
+
 ### El archivo rc.local se puede encontrar en la carpeta `/etc/rc.local` de este repo
 
 ```bash
@@ -216,28 +253,29 @@ $ sudo apt-get install -y mesa-utils libgl1-mesa-glx
 
 # Instalar Node
 
-## 1. Instalar node 8.11.1
+## 1. Instalar node 8.11.3
 ```bash
-$ wget https://nodejs.org/dist/v8.11.1/node-v8.11.1-linux-armv6l.tar.gz 
-$ tar -xvf node-v8.11.1-linux-armv6l.tar.gz 
-$ cd node-v8.11.1-linux-armv6l
+$ wget https://nodejs.org/dist/v8.11.3/node-v8.11.3-linux-armv6l.tar.gz 
+$ tar -xvf node-v8.11.3-linux-armv6l.tar.gz 
+$ cd node-v8.11.3-linux-armv6l
 $ sudo cp -R * /usr/local/
 $ cd ..
-$ rm -r node-v8.11.1-linux-armv6l 
-$ rm node-v8.11.1-linux-armv6l.tar.gz
+$ rm -r node-v8.11.3-linux-armv6l 
+$ rm node-v8.11.3-linux-armv6l.tar.gz
+$ sudo npm i -g npm
 ```
 
 ## 2. Instalar Electron
-La versión 2.0.0 es funcional para rasberry y tiene corregido el problema de que las peticiones ajax bloquean electorn
+La versión 2.0.3 es funcional para rasberry y tiene corregido el problema de que las peticiones ajax bloquean electorn
 ```bash
-$ npm install -g electron@2.0.0 --unsafe-perm=true --allow-root
+$ sudo npm install -g electron@2.0.3 --unsafe-perm=true --allow-root
 ```
 # Instalar software de dependencias de INUPDATER
 
 Se dene revisar el archivo requirements.txt del repositorio `linuxOTAComptiblwUpdater`
 ## 1. Instalar pip
 ```bash
-$ sudo apt-get install python-pip
+$ sudo apt-get install python-pip -y
 ```
 ## 2. Instalar librería de request http
 ```bash
@@ -264,6 +302,11 @@ $ mkdir -p /home/pi/software/firmwares
 
 
 ## 7. Instalar los certificados de inUpdater
+
+Crear carpeta para los certificados
+```bash
+$ mkdir -p /home/pi/software/certificates/
+```
 Se deben copiar los certificados a la siguiente ruta de el dispositivo
 `/home/pi/software/certificates/`
 - <NAME_OF_FOLDER>/
@@ -275,9 +318,9 @@ Donde `<NAME_OF_FOLDER>` es el nombre de la carpeta que contiene los certificado
 ```bash 
 $ scp -r <NAME_OF_FOLDER> pi@192.168.1.118:/home/pi/software/certificates/
 ```
-Igualmente se debe crear en `/home/pi/software/certificates/`un archivo `list.txt` el cual contiene la siguiente estructura, `<NAME_OF_FOLDER>`:`<CERTIFICATE_ID>`
+Igualmente se debe crear en `/home/pi/software/certificates/`un archivo `list.lst` el cual contiene la siguiente estructura, `<NAME_OF_FOLDER>`:`<CERTIFICATE_ID>`
 
-un ejemplo es: `intouch_15_3100270:f448fb1ac612635f8af15e70961e47a8`
+un ejemplo es: `intouch_15_3100270:f448fb1ac111111f8af15e70961e47a8`
 
 ## 8. Instalar biblioteca criptográfica mbedtls
 
@@ -285,6 +328,10 @@ Se debe descargar el último release del repositorio. Se debe tener presente la 
 
 https://github.com/DavidMora/mbedtls-arch-dependant-releases
 
+
+### A continuación se presentarán 2 opciones, si usted quiere compilar la aplicación, siga el primera opción, si cuenta con los binarios, siga el segunda opción
+
+## PRIMERA OPCIÓN
 Si por algún motivo no se encutra el código necesitado se puede seguir el siguiente paso
 ### OPCIONAL **NO** se cuenta con los binarios de los archivos de `mbedtls/pk_sign` y `mbedtls/aescrypt2` **compilados en ARM Raspberry**
 
@@ -292,6 +339,8 @@ Copiar carpeta de desarrollo de mbedtl usada en `in-updater` a raspberry
 ```bash 
 $ scp -r mbedtls pi@192.168.1.118:/home/pi/
 ```
+
+## Creacion de carpetas para mbedtls
 ```bash 
 $ mkdir -p /home/pi/software/mbedtls/programs/aes
 $ mkdir -p /home/pi/software/mbedtls/programs/pkey
@@ -304,16 +353,19 @@ $ cp mbedtls/programs/pkey/pk_sign /home/pi/software/mbedtls/programs/pkey
 $ rm -r mbedtls
 ```
 
+## SEGUNDA OPCIÓN
 ### Se cuenta con los binarios de los archivos de `mbedtls/pk_sign` y `mbedtls/aescrypt2` **compilados en ARM Raspberry**
-```bash 
-$ scp -r aescrypt2 pi@192.168.1.118:/home/pi/
-$ scp -r pk_sign pi@192.168.1.118:/home/pi/
+```bash
+$ mkdir /home/pi/mbedtls/
+$ wget https://github.com/DavidMora/mbedtls-arch-dependant-releases/releases/download/V1.0.0/release.tar
+$ tar -xvf release.tar
+$ rm release.tar
 ```
 ```bash 
 $ mkdir -p /home/pi/software/mbedtls/programs/aes
 $ mkdir -p /home/pi/software/mbedtls/programs/pkey
-$ cp /home/pi/aescrypt2 /home/pi/software/mbedtls/programs/aes
-$ cp /home/pi/pk_sign /home/pi/software/mbedtls/programs/pkey
+$ cp /home/pi/mbedtls/aescrypt2 /home/pi/software/mbedtls/programs/aes
+$ cp /home/pi/mbedtls/pk_sign /home/pi/software/mbedtls/programs/pkey
 ```
 
 
@@ -326,7 +378,7 @@ $ scp release-X.Y.Z.tar.gz pi@192.168.1.118:/home/pi/
 ```
 ```bash
 $ tar xvzf release-X.Y.Z.tar.gz
-$ mkdir -p software/in-updater
+$ mkdir -p /home/pi/software/in-updater
 $ cp release-X.Y.Z/* /home/pi/software/in-updater/
 $ rm -r release-X.Y.Z*
 ```
@@ -385,7 +437,7 @@ Luego se deben añadir los siguientes jobs
 ## 12. Declarar archivo raspberry para inmote
 Para que inmote sepa que está corriendo en un raspberry es necesario declarar el siguiente archivo
 ```bash
-$ echo "yesiam">/home/imraspberry
+$ sudo echo "yesiam">/home/imraspberry
 $ sudo chown pi:pi /home/imraspberry
 $ sudo chmod 766 /home/imraspberry
 ```
@@ -409,7 +461,46 @@ $(which electron) /home/pi/software/inmote/main.js
 ```bash 
 $ echo "while :">>/home/pi/.bashrc
 $ echo "do">>/home/pi/.bashrc
-$ echo "startx -- -nocursor 2>/dev/null >/dev/null">>/home/pi/.bashrc
+$ echo "startx -- -nocursor 2>/dev/null">>/home/pi/.bashrc
 $ echo "done">>/home/pi/.bashrc
 ```
 ### Los archivos .xinitrc y .bashrc estarán en la carpeta `home/pi` de este repositorio
+
+## 15 Añadir usuario pi a grupo sudo
+Para que los comandos ejecutados por el inmote no fallen a razón de la falta de permisos
+```bash
+$ sudo usermod -g sudo pi
+```
+## 16 Dar permisos al archivo de configuración de red
+Para poder modificar el archivo wp-supplicant se debe ejecutar el siguiente comando
+```bash
+$ sudo chmod 666 /etc/wpa_supplicant/wpa_supplicant.conf
+```
+
+también se debe dar permisos de escritura a la carpeta `wpa_supplicant`
+```bash
+$ sudo chmod 757 /etc/wpa_supplicant/
+```
+
+
+# Validar errores de electron
+Debido a que Electron a veces se bloquea, se decide que inmote hace logs de forma continua cada minutos, por ende, debe existir un script que valide minuto a minuto estos logs y si el último log es mayor a tres minutos el dispositivo se debe reiniciar.
+
+## 1. Se debe crear un archivo el cual almacenará los logs.
+
+Este archivo estará /home/pi/lastCheckAlive.log
+```bash 
+$ touch /home/pi/lastCheckAlive.log
+```
+
+## 2. Crear archivo de python para la verificación
+en la carpeta `/home/pi` contiene un archivo llamado `check_alive.py` este archivo debe ser pegado en `/home/pi` del raspberry, pues será el encargado de validar la antiguedad de los logs
+
+Ejecutar 
+```bash
+$ crontab -e
+```
+Se debe agregar la siguiente linea
+```bash
+*/3 * * * * python /home/pi/check_alive.py 
+``` 
