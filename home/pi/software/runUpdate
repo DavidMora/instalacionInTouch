@@ -1,0 +1,2 @@
+#!/bin/sh
+$(which python) /home/pi/software/in-updater/update.pyc

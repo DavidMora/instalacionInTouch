@@ -238,7 +238,7 @@ Este archivo debe terminar de la siguiente forma
 ```bash
 # Start ifplugd daemon to connect or disconect the wlan0 interface
 ifplugd
-exhit 0
+exit 0
 ```
 # Instalar servidor X
 
@@ -441,7 +441,7 @@ $ sudo echo "yesiam">/home/imraspberry
 $ sudo chown pi:pi /home/imraspberry
 $ sudo chmod 766 /home/imraspberry
 ```
-Este archivo debe ser 
+Este archivo es obligatorio, sin el inmote no sabrá si es un navegador cualquiera o es un intouch
 ## 12. Instalar inmote
 Debemos ejecutar los siguientes comandos, esto registrará la cosa en la nube, le dará autenticación y descargará el firmware de inmote en la carpeta definida por la variable de entorno `UPDATER_OTA_INMOTE`
 ```bash
