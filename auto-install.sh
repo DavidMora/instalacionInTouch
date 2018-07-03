@@ -3,7 +3,8 @@
 sudo apt-get update
 sudo apt-get install vim -y
 
-# raspi-config Expand Filesystem
+# Expand Filesystem
+sudo raspi-config --expand-rootfs
 # REBOOT
 
 echo "dev:insite1234" | sudo chpasswd
@@ -15,10 +16,13 @@ echo "pi:insite1234" | sudo chpasswd
 
 
 # raspi-config AUTO LOGIN Boot Options -> Desktop/CLI -> Console AutoLogin
-# sudo raspi-config
+sudo systemctl set-default graphical.target
+sudo ln -fs /etc/systemd/system/autologin@.service /etc/systemd/system/getty.target.wants/getty@tty1.service
+sudo sed /etc/lightdm/lightdm.conf -i -e "s/^\(#\|\)autologin-user=.*/autologin-user=pi/"
+sudo disable_raspi_config_at_boot
 
 # raspi-config Interfacing Options -> SSH -> YES
-# sudo raspi-config
+sudo update-rc.d ssh enable && sudo invoke-rc.d ssh start
 
 # BOOT CONFIG
 sudo cp /boot/cmdline.txt /boot/cmdline.old.txt
