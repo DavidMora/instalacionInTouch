@@ -21,6 +21,28 @@ Copiar la imagen a la SD
 ```sh
 $ sudo dd bs=1m if=2018-03-13-raspbian-stretch.img of=/dev/r<NAME OF DISK> conv=sync
 ```
+# USAR SCRIPT AUTOMATICO
+Para usar el script automático se debe ejecutar el script `create-release.sh` de este directorio, luego se debe crear un servidor apache.
+
+```bash
+$ docker run --rm --name apache -p=80:80 --volume /tmp/apache/:/usr/local/apache2/htdocs httpd
+```
+
+Donde `/tmp/apache` es la carpeta donde se ubicará el tar.gz que se creó previamente.
+
+## 1. Ejecutar el sistema de instalación automático
+
+Debemos conectar el raspberry a la misma red del computador donde tenemos el apache descrito en el punto anterior, acto seguido se deben ejecutar los siguientes comandos.
+
+```bash
+$ wget http://IP_COMPUTADOR/install.tar.gz
+$ mkdir /home/pi/install
+$ tar xvzf install.tar.gz -C /home/pi/install
+$ sudo sh /home/pi/install/auto-install.sh
+```
+
+Si usted sigue estos pasos no es necesario que continue leyendo esta guía pues todo se realizará de manera automática.
+
 # Iniciar sesion
 `La contraseña por defecto es pi:raspberry`
 ## 1. Actualizar Raspberry
