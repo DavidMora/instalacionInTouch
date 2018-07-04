@@ -50,17 +50,21 @@ sudo apt-get install plymouth plymouth-themes pix-plym-splash -y
 sudo cp /usr/share/plymouth/themes/pix/splash.png /usr/share/plymouth/themes/pix/splash.old.png
 sudo cp /home/pi/install/splas/180x180.png /usr/share/plymouth/themes/pix/splash.png
 touch /home/pi/auto-logs/init-logo-done
+
 # Borrar texto del splash screen
 sudo cp /home/pi/install/usr/share/plymouth/themes/pix/pix.script /usr/share/plymouth/themes/pix/pix.script
 touch /home/pi/auto-logs/splash-text-done
+
 # Configuración de /boot/
 sudo mv /boot/config.txt /boot/config.old.txt
 sudo cp /home/pi/install/boot/config.txt /boot/config.txt
 touch /home/pi/auto-logs/boot2-done
+
 # Configurar interfaz de red
 sudo apt-get install ifplugd
 sudo cp /home/pi/install/etc/ifplugd/action.d/ifupdown /etc/ifplugd/action.d/ifupdown
 touch /home/pi/auto-logs/ifplugd-done
+
 # Configurar archivo de interfaces
 sudo cp /home/pi/install/etc/network/interfaces /etc/network/interfaces
 touch /home/pi/auto-logs/interfaces-done
@@ -70,6 +74,7 @@ sudo apt-get --no-install-recommends install xserver-xorg xserver-xorg-video-fbd
 sudo apt-get install libgtk2.0-0 libgtk-3-0 libxrender1 libxtst6 libxi6 libxss-dev libgconf-2-4 libasound2 libnss3-dev libpangocairo-1.0-0 -y
 sudo apt-get install -y mesa-utils libgl1-mesa-glx
 touch /home/pi/auto-logs/xserver-done
+
 # Instalar Node
 wget https://nodejs.org/dist/v8.11.3/node-v8.11.3-linux-armv6l.tar.gz 
 tar -xvf node-v8.11.3-linux-armv6l.tar.gz 
@@ -138,8 +143,8 @@ sudo chmod 766 /home/imraspberry
 touch /home/pi/auto-logs/raspi-file-done
 
 # Crear .xinitrc
-cp /home/pi/install/.xinitrc /home/pi/.xinitrc
-cp /home/pi/install/.bashrc /home/pi/.bashrc
+cp /home/pi/install/home/pi/.xinitrc /home/pi/.xinitrc
+# cp /home/pi/install/home/pi/.bashrc /home/pi/.bashrc
 touch /home/pi/auto-logs/file-xinit-done
 # Añadir usuario pi a grupo sudo
 sudo usermod -g sudo pi
@@ -150,6 +155,6 @@ sudo chmod 757 /etc/wpa_supplicant/
 touch /home/pi/auto-logs/wpa-done
 # Validar errores de electron
 touch /home/pi/lastCheckAlive.log
-cp /home/pi/check_alive.py /home/pi/check_alive.py
+cp /home/pi/install/check_alive.py /home/pi/check_alive.py
 echo "*/3 * * * * python /home/pi/check_alive.py" >> updatecron
 touch /home/pi/auto-logs/cron2-done
