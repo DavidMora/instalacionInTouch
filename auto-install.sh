@@ -1,160 +1,257 @@
 #!/bin/sh
 
 mkdir /home/pi/auto-logs/
+touch /home/pi/auto-logs/args
+
+# archivo de error para inauth
+
+# funcion para validar que un comando funcione
+# si no funciona escribira el log del comando que falla el cual es el primer argumento
+check_command (){
+  if [ $? -ne 0 ]; then
+    echo "$(date) -- $1\n">>/home/pi/auto-logs/error.log
+  fi
+}
+
+## DECLARACION DE VARIABLES ##
+#d flag es si es un dispositivo de desarrollo
+#i flag es si es un dispositivo de desarrollo y IP_DEV sera el argumento i que contiene la ip del incloud de desarrollo
+#p flag es el password para el usuario pi
+#q flag es el password para el usuario dev
+
+DEV=0;
+IP_DEV=0;
+PI_PASSWD="insite1234";
+DEV_PASSWD="insite1234";
+while getopts ":q:i:d:p:" option; do
+  case "${option}" in
+    i) 
+      IP_DEV=${OPTARG}
+      echo "IP_DEV:$IP_DEV">>/home/pi/auto-logs/args;;
+    d) 
+      DEV=1
+      echo "dev:$DEV">>/home/pi/auto-logs/args;;
+    p) 
+      PI_PASSWD=${OPTARG}
+      echo "PI_PASSWD:$PI_PASSWD">>/home/pi/auto-logs/args;;
+    q) 
+      DEV_PASSWD=${OPTARG}
+      echo "DEV_PASSWD:$DEV_PASSWD">>/home/pi/auto-logs/args;;
+  esac
+done
 
 sudo apt-get update
+check_command "sudo apt-get update"
 sudo apt-get install vim -y
-touch /home/pi/auto-logs/update-done
-# Expand Filesystem
-sudo raspi-config --expand-rootfs
+check_command "sudo apt-get install vim -y"
+
+# #COMENTARIOS
+# # Expand Filesystem
+# sudo raspi-config --expand-rootfs
+# check_command "sudo raspi-config --expand-rootfs"
+# #COMENTARIOS
 # REBOOT
 
-echo "dev:insite1234" | sudo chpasswd
-# sudo su -c "useradd dev -s /bin/bash -m -G sudo dev"
-# sudo chpasswd << 'END'
-# dev:insite1234
-# END
-echo "pi:insite1234" | sudo chpasswd
-touch /home/pi/auto-logs/users-done
+sudo su -c "useradd dev -s /bin/bash -m -G sudo"
+check_command "adduser dev"
+sudo chpasswd << 'END'
+dev:insite1234
+END
+check_command "passwd:dev"
+sudo usermod -a -G sudo dev
+check_command "usermod -a -G sudo dev"
+
+echo "pi:$PI_PASSWD" | sudo chpasswd
+check_command "pi:password"
+
+# Añadir usuario pi a grupo sudo
+sudo usermod -g sudo pi
+check_command "usermod -g sudo pi"
 
 # raspi-config AUTO LOGIN Boot Options -> Desktop/CLI -> Console AutoLogin
 sudo systemctl set-default graphical.target
+check_command "systemctl"
 sudo ln -fs /etc/systemd/system/autologin@.service /etc/systemd/system/getty.target.wants/getty@tty1.service
+check_command "ln -fs /etc/systemd/system/autologin@.service"
 sudo sed /etc/lightdm/lightdm.conf -i -e "s/^\(#\|\)autologin-user=.*/autologin-user=pi/"
-sudo disable_raspi_config_at_boot
-touch /home/pi/auto-logs/autologin-done
+check_command "sed /etc/lightdm/lightdm.conf"
+# disable_raspi_config_at_boot()
+if [ -e /etc/profile.d/raspi-config.sh ]; then
+  rm -f /etc/profile.d/raspi-config.sh
+  check_command "disable_raspi_config_at_boot 1"
+  if [ -e /etc/systemd/system/getty@tty1.service.d/raspi-config-override.conf ]; then
+    rm /etc/systemd/system/getty@tty1.service.d/raspi-config-override.conf
+    check_command "disable_raspi_config_at_boot 2"
+  fi
+  telinit q
+  check_command "disable_raspi_config_at_boot 3"
+fi
 
-# raspi-config Interfacing Options -> SSH -> YES
-sudo update-rc.d ssh enable && sudo invoke-rc.d ssh start
-touch /home/pi/auto-logs/ssh-done
+if [ $DEV -eq 1 ]
+then
+  # raspi-config Interfacing Options -> SSH -> YES
+  sudo update-rc.d ssh enable && sudo invoke-rc.d ssh start
+  check_command "enablessh"
+fi
+
+# #COMENTARIOS
 # BOOT CONFIG
+sudo printf " quiet splash loglevel=0 logo.nologo vt.global_cursor_default=0 plymouth.ignore-serial-consoles">>/home/pi/install/cmd.add.txt
+check_command "create adition cmdline"
 sudo cp /boot/cmdline.txt /boot/cmdline.old.txt
-sudo echo "dwc_otg.lpm_enable=0 console=serial0,115200 console=tty3 root=PARTUUID=7ebe8cf8-02 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait quiet splash loglevel=0 logo.nologo vt.global_cursor_default=0 plymouth.ignore-serial-consoles">/boot/cmdline.txt
-touch /home/pi/auto-logs/boot-done
-# Quitar mensajes de kernel
+check_command "cp cmdline.txt.old"
+sudo cp /boot/cmdline.txt /home/pi/install
+check_command "cp cmdline.txt install"
+tr -d '\n' < /home/pi/install/cmdline.txt > cmdline.new.txt
+check_command "remove new line in cmdline"
+cat cmdline.new.txt cmd.add.txt > cmd.txt
+check_command "create final cmdline"
+sudo cp cmd.txt /boot/cmdline.txt
+check_command "copy boot cmdline"
+
+# #COMENTARIOS
+
+# # Quitar mensajes de kernel
 sudo cp /home/pi/install/etc/rc.local /etc/rc.local
+check_command "cp etc/rc.local"
 
 sudo mv /etc/motd /etc/motd.old
+check_command "mv etc/rc.local"
 sudo touch /etc/motd
+check_command "touch /etc/motd"
 sudo update-rc.d motd remove
+check_command "update-rc.d motd remove"
 touch /home/pi/.hushlogin
-touch /home/pi/auto-logs/kernel-done
+check_command "touch /home/pi/.hushlogin"
 
 # Quitar logs del auto login
 sudo cp /home/pi/install/etc/systemd/system/autologin@.service /etc/systemd/system/autologin@.service
-touch /home/pi/auto-logs/autologin-logs-done
+check_command "autologin_logs"
 
 # Poner logo de inmote al inicio
 sudo apt-get install plymouth plymouth-themes pix-plym-splash -y
+check_command "splash logo 1"
 
 sudo cp /usr/share/plymouth/themes/pix/splash.png /usr/share/plymouth/themes/pix/splash.old.png
-sudo cp /home/pi/install/splas/180x180.png /usr/share/plymouth/themes/pix/splash.png
-touch /home/pi/auto-logs/init-logo-done
+check_command "splash logo 2"
+sudo cp /home/pi/install/splash/180x180.png /usr/share/plymouth/themes/pix/splash.png
+check_command "splash logo 3"
 
 # Borrar texto del splash screen
 sudo cp /home/pi/install/usr/share/plymouth/themes/pix/pix.script /usr/share/plymouth/themes/pix/pix.script
-touch /home/pi/auto-logs/splash-text-done
+check_command "splash remove text"
 
 # Configuración de /boot/
 sudo mv /boot/config.txt /boot/config.old.txt
+check_command "boot config 1"
 sudo cp /home/pi/install/boot/config.txt /boot/config.txt
-touch /home/pi/auto-logs/boot2-done
+check_command "boot config 2"
 
 # Configurar interfaz de red
 sudo apt-get install ifplugd
+check_command "install ifplugd"
 sudo cp /home/pi/install/etc/ifplugd/action.d/ifupdown /etc/ifplugd/action.d/ifupdown
-touch /home/pi/auto-logs/ifplugd-done
+check_command "config ifplugd"
 
 # Configurar archivo de interfaces
 sudo cp /home/pi/install/etc/network/interfaces /etc/network/interfaces
-touch /home/pi/auto-logs/interfaces-done
+check_command "cp interfaces"
 
-# Instalar servidor X
+# # Instalar servidor X
 sudo apt-get --no-install-recommends install xserver-xorg xserver-xorg-video-fbdev xinit pciutils xinput xfonts-100dpi xfonts-75dpi xfonts-scalable -y
+check_command "install x 1"
 sudo apt-get install libgtk2.0-0 libgtk-3-0 libxrender1 libxtst6 libxi6 libxss-dev libgconf-2-4 libasound2 libnss3-dev libpangocairo-1.0-0 -y
+check_command "install x 2"
 sudo apt-get install -y mesa-utils libgl1-mesa-glx
-touch /home/pi/auto-logs/xserver-done
+check_command "install x 3"
 
 # Instalar Node
-wget https://nodejs.org/dist/v8.11.3/node-v8.11.3-linux-armv6l.tar.gz 
+wget https://nodejs.org/dist/v8.11.3/node-v8.11.3-linux-armv6l.tar.gz
+check_command "install node 1"
 tar -xvf node-v8.11.3-linux-armv6l.tar.gz 
+check_command "install node 2"
 sudo cp -R node-v8.11.3-linux-armv6l/* /usr/local/
+check_command "install node 3"
 sudo npm i -g npm
-touch /home/pi/auto-logs/node-done
+check_command "install npm"
 
 # Instalar Electron
-sudo npm install -g electron@2.0.3 --unsafe-perm=true --allow-root
-touch /home/pi/auto-logs/electron-done
+sudo npm install -g electron@2.0.4 --unsafe-perm=true --allow-root
+check_command "install electron"
+
 # Instalar software de dependencias de INUPDATER
 # Instalar pip
 sudo apt-get install python-pip -y
+check_command "install pip"
 pip install requests
+check_command "install pip-request"
 
 mkdir -p /home/pi/software/certificates
 mkdir -p /home/pi/software/files
 mkdir -p /home/pi/software/inmote
 mkdir -p /home/pi/software/firmwares
-mkdir -p /home/pi/software/certificates/
-touch /home/pi/auto-logs/pip-done
 # Instalar biblioteca criptográfica mbedtls
 
 wget https://github.com/DavidMora/mbedtls-arch-dependant-releases/releases/download/V1.0.0/release.tar
+check_command "wget mbedtls V1.0.0"
 tar -xvf release.tar
+check_command "tar -xvf release.tar"
 mkdir -p /home/pi/software/mbedtls/programs/aes
 mkdir -p /home/pi/software/mbedtls/programs/pkey
 mv aescrypt2 /home/pi/software/mbedtls/programs/aes
+check_command "mv aescrypt2"
 mv pk_sign /home/pi/software/mbedtls/programs/pkey
-touch /home/pi/auto-logs/mbedtls-done
+check_command "mv pk_sign"
 
 # Descargar inUpdater 
-# -
-# -
-# -
+mkdir -p /home/pi/software/in-updater
+cp -r /home/pi/install/inupdater/* /home/pi/software/in-updater
+check_command "cp in-updater"
+cp -r /home/pi/install/certificates/* /home/pi/software/certificates
+check_command "cp certificates"
 
-# Declarar variables de entorno en inupdater
-echo "export UPDATER_OTA_INMOTE=/home/pi/software/inmote">>/home/pi/.bashrc
-echo "export UPDATER_OTA_INAUTH_URL=https://inmote.api.insite.com.co:4500">>/home/pi/.bashrc
-echo "export UPDATER_OTA_CERTIFICATE_PATH=/home/pi/software/certificates">>/home/pi/.bashrc
-echo "export UPDATER_OTA_MBED_PATH=/home/pi/software/mbedtls">>/home/pi/.bashrc
-echo "export UPDATER_OTA_FILES=/home/pi/software/updater-files">>/home/pi/.bashrc
-echo "export UPDATER_OTA_FIRMWARES=/home/pi/software/firmwares">>/home/pi/.bashrc
-echo "export UPDATER_OTA_UPDATE_FILE=/home/pi/software/updates.txt">>/home/pi/.bashrc
-echo "export UPDATER_OTA_CRON_UPDATE_FILE=/home/pi/software/runUpdate">>/home/pi/.bashrc
-echo "export UPDATER_OTA_CRON_AUTH_FILE=/home/pi/software/runAuth">>/home/pi/.bashrc
+
 
 mkdir -p /home/pi/software/updater-files
 mkdir -p /home/pi/software/firmwares
 touch /home/pi/software/updates.txt
-touch /home/pi/auto-logs/environment-done
+
 # Crear cron Job para updater
 cp /home/pi/install/home/pi/software/runAuth /home/pi/software/runAuth
+check_command "cp runAuth"
 cp /home/pi/install/home/pi/software/runUpdate /home/pi/software/runUpdate
+check_command "cp runUpdate"
 mkdir -p /home/pi/software/in-updater2
 
-crontab -l > updatecron
-echo "0 3 * * * sh /home/pi/software/runAuth" >> updatecron
-echo "5 3 * * * sh /home/pi/software/runUpdate" >> updatecron
+touch /home/pi/updatecron
+crontab /home/pi/updatecron
+check_command "create crontab updatecron"
 
-touch /home/pi/auto-logs/cron1-done
+crontab -l > updatecron
+check_command "crontab updatecron"
+echo "0 3 * * * sh /home/pi/software/runAuth" >> /home/pi/updatecron
+check_command "crontab runAuth"
+echo "5 3 * * * sh /home/pi/software/runUpdate" >> /home/pi/updatecron
+check_command "crontab runUpdate"
+
 # Declarar archivo raspberry para inmote
-sudo echo "yesiam">/home/imraspberry
-sudo chown pi:pi /home/imraspberry
-sudo chmod 766 /home/imraspberry
-touch /home/pi/auto-logs/raspi-file-done
+echo "yesiam">/home/pi/imraspberry
+check_command "echo yesiam"
 
 # Crear .xinitrc
 cp /home/pi/install/home/pi/.xinitrc /home/pi/.xinitrc
-# cp /home/pi/install/home/pi/.bashrc /home/pi/.bashrc
-touch /home/pi/auto-logs/file-xinit-done
-# Añadir usuario pi a grupo sudo
-sudo usermod -g sudo pi
+check_command "cp .xinitrc"
+cp /home/pi/install/home/pi/.bashrc /home/pi/.bashrc
 
 # Dar permisos al archivo de configuración de red
 sudo chmod 666 /etc/wpa_supplicant/wpa_supplicant.conf
+check_command "chmod wpa_supplicant.conf"
 sudo chmod 757 /etc/wpa_supplicant/
-touch /home/pi/auto-logs/wpa-done
+check_command "chmod wpa_supplicant"
 # Validar errores de electron
 touch /home/pi/lastCheckAlive.log
-cp /home/pi/install/check_alive.py /home/pi/check_alive.py
-echo "*/3 * * * * python /home/pi/check_alive.py" >> updatecron
-touch /home/pi/auto-logs/cron2-done
+cp /home/pi/install/home/pi/check_alive.py /home/pi/check_alive.py
+check_command "cp check_alive.py"
+echo "*/3 * * * * python /home/pi/check_alive.py" >> /home/pi/updatecron
+check_command "cron check_alive.py"
+

@@ -38,7 +38,24 @@ Debemos conectar el raspberry a la misma red del computador donde tenemos el apa
 $ wget http://IP_COMPUTADOR/install.tar.gz
 $ mkdir /home/pi/install
 $ tar xvzf install.tar.gz -C /home/pi/install
-$ sudo sh /home/pi/install/auto-install.sh
+```
+
+Ahora debemos ejecutar el script de instalación, si queremos instalar el programa para un intouch de producción solamente debemos ejecutar
+
+```bash
+$ sh /home/pi/install/auto-install.sh -p password_para_pi -q password_para_dev
+$ sh /home/pi/install/auto-install-inmote.sh
+$ source /home/pi/.bashrc
+$ sh /home/pi/install/auto-install-update.sh
+```
+
+Si el intouch es para desarrollo se debe ejecutar con las siguientes flags
+
+```bash
+$ sh /home/pi/install/auto-install.sh -d 1 -p password_para_pi -q password_para_dev
+$ sh /home/pi/install/auto-install-inmote.sh -d 1 -i IP_INCLOUD_DESARROLLO
+$ source /home/pi/.bashrc
+$ sh /home/pi/install/auto-install-update.sh
 ```
 
 Si usted sigue estos pasos no es necesario que continue leyendo esta guía pues todo se realizará de manera automática.
@@ -288,9 +305,9 @@ $ sudo npm i -g npm
 ```
 
 ## 2. Instalar Electron
-La versión 2.0.3 es funcional para rasberry y tiene corregido el problema de que las peticiones ajax bloquean electorn
+La versión 2.0.4 es funcional para rasberry y tiene corregido el problema de que las peticiones ajax bloquean electorn
 ```bash
-$ sudo npm install -g electron@2.0.3 --unsafe-perm=true --allow-root
+$ sudo npm install -g electron@2.0.4 --unsafe-perm=true --allow-root
 ```
 # Instalar software de dependencias de INUPDATER
 
