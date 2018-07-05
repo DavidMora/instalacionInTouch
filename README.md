@@ -124,8 +124,13 @@ Luego en la ventana emergente.
 
 ## 1. Modificar /boot/cmdline.txt
 ```bash 
+$ sudo printf " quiet splash loglevel=0 logo.nologo vt.global_cursor_default=0 plymouth.ignore-serial-consoles">>/home/pi/install/cmd.add.txt
 $ sudo cp /boot/cmdline.txt /boot/cmdline.old.txt
-$ sudo echo "dwc_otg.lpm_enable=0 console=serial0,115200 console=tty3 root=PARTUUID=7ebe8cf8-02 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait quiet splash loglevel=0 logo.nologo vt.global_cursor_default=0 plymouth.ignore-serial-consoles">/boot/cmdline.txt
+$ sudo cp /boot/cmdline.txt /home/pi/install
+$ tr -d '\n' < /home/pi/install/cmdline.txt > cmdline.new.txt
+$ cat cmdline.new.txt cmd.add.txt > cmd.txt
+$ sudo cp cmd.txt /boot/cmdline.txt
+
 ```
 ### El archivo puede encontrarse en `/boot/cmdline.txt` de este repositorio.
 
