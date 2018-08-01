@@ -5,3 +5,4 @@ inupdater/*
 !inupdater/.init
 certificates/*
 !certificates/.init
+*_certificates

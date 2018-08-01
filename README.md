@@ -19,12 +19,21 @@ $ sudo diskutil unmountDisk /dev/<NAME OF DISK>
 
 Copiar la imagen a la SD
 ```sh
-$ sudo dd bs=1m if=2018-03-13-raspbian-stretch.img of=/dev/r<NAME OF DISK> conv=sync
+$ sudo dd bs=1m if=XXXX-XX-XX-raspbian-stretch.img of=/dev/r<NAME OF DISK> conv=sync
 ```
 # USAR SCRIPT AUTOMATICO
+Para usar el script automático es necesario haber incluido los archivos `.pyc` del modulo de inupdater en la carpeta `./inpudater` de este proyecto.
+
 Para usar el script automático se debe ejecutar el script `create-release.sh` de este directorio, luego se debe crear un servidor apache.
 
 ```bash
+$ ./create-release.sh
+```
+Para poder servir el archivo zip es necesario crear una carpeta, para evitar que sea permanente se creará en /tmp/apache
+
+```bash
+$ mkdir -p /tmp/apache
+$ cp install.tar.gz /tmp/apache
 $ docker run --rm --name apache -p=80:80 --volume /tmp/apache/:/usr/local/apache2/htdocs httpd
 ```
 
