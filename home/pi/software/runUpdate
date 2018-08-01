@@ -1,2 +1,5 @@
 #!/bin/sh
-$(which python) /home/pi/software/in-updater/update.pyc
+if [ ! -z $IN_UPDATER_FOLDER ] || [ "$IN_UPDATER_FOLDER" = "" ]; then
+  IN_UPDATER_FOLDER="in-updater";
+fi
+$(which python) /home/pi/software/$(echo $IN_UPDATER_FOLDER)/update.pyc
