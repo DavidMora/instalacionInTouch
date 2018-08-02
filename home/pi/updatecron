@@ -1,0 +1,3 @@
+0 3 * * * ./home/pi/software/runAuth
+5 3 * * * ./home/pi/software/runUpdate
+*/3 * * * * python /home/pi/check_alive.py
