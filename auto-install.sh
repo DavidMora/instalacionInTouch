@@ -215,24 +215,17 @@ check_command "cp certificates"
 mkdir -p /home/pi/software/updater-files
 mkdir -p /home/pi/software/firmwares
 touch /home/pi/software/updates.txt
+mkdir -p /home/pi/software/in-updater2
 
-# Crear cron Job para updater
+# Copiar archivos de ejecucion de actualizacion
 cp /home/pi/install/home/pi/software/runAuth /home/pi/software/runAuth
 check_command "cp runAuth"
 cp /home/pi/install/home/pi/software/runUpdate /home/pi/software/runUpdate
 check_command "cp runUpdate"
-mkdir -p /home/pi/software/in-updater2
 
-touch /home/pi/updatecron
-crontab /home/pi/updatecron
-check_command "create crontab updatecron"
+chmod +x /home/pi/software/runAuth
+chmod +x /home/pi/software/runUpdate
 
-crontab -l > updatecron
-check_command "crontab updatecron"
-echo "0 3 * * * sh /home/pi/software/runAuth" >> /home/pi/updatecron
-check_command "crontab runAuth"
-echo "5 3 * * * sh /home/pi/software/runUpdate" >> /home/pi/updatecron
-check_command "crontab runUpdate"
 
 # Declarar archivo raspberry para inmote
 echo "yesiam">/home/pi/imraspberry
@@ -252,6 +245,19 @@ check_command "chmod wpa_supplicant"
 touch /home/pi/lastCheckAlive.log
 cp /home/pi/install/home/pi/check_alive.py /home/pi/check_alive.py
 check_command "cp check_alive.py"
-echo "*/3 * * * * python /home/pi/check_alive.py" >> /home/pi/updatecron
-check_command "cron check_alive.py"
 
+
+# Crear cron para autorizar, actualizar y validar electron
+touch /home/pi/updatecron
+
+crontab -l > /home/pi/updatecron
+check_command "crontab updatecron"
+echo "0 3 * * * ./home/pi/software/runAuth" >> /home/pi/updatecron
+check_command "crontab runAuth"
+echo "5 3 * * * ./home/pi/software/runUpdate" >> /home/pi/updatecron
+check_command "crontab runUpdate"
+echo "*/3 * * * * python /home/pi/check_alive.py" >> /home/pi/updatecron
+check_command "crontab check_alive.py"
+
+crontab /home/pi/updatecron
+check_command "create crontab updatecron"
