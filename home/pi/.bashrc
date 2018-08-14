@@ -118,7 +118,4 @@ export UPDATER_OTA_MBED_PATH=/home/pi/software/mbedtls
 export UPDATER_OTA_FILES=/home/pi/software/updater-files
 export UPDATER_OTA_FIRMWARES=/home/pi/software/firmwares
 export UPDATER_OTA_UPDATE_FILE=/home/pi/software/updates.txt
-while :
-do
-	startx -- -nocursor 2>/dev/null >/dev/null
-done
+

@@ -246,20 +246,5 @@ touch /home/pi/lastCheckAlive.log
 cp /home/pi/install/home/pi/check_alive.py /home/pi/check_alive.py
 check_command "cp check_alive.py"
 
-
-# Crear cron para autorizar, actualizar y validar electron
-cp /home/pi/install/home/pi/updatecron /home/pi/updatecron
-check_command "copy cron file"
-
-crontab /home/pi/updatecron
-check_command "create crontab updatecron"
-# touch /home/pi/updatecron
-
-# crontab -l > /home/pi/updatecron
-# check_command "crontab updatecron"
-# echo "0 3 * * * ./home/pi/software/runAuth" >> /home/pi/updatecron
-# check_command "crontab runAuth"
-# echo "5 3 * * * ./home/pi/software/runUpdate" >> /home/pi/updatecron
-# check_command "crontab runUpdate"
-# echo "*/3 * * * * python /home/pi/check_alive.py" >> /home/pi/updatecron
-# check_command "crontab check_alive.py"
+# crear archivo de validacción de in-updater
+touch /home/pi/software/in-updater-file.txt

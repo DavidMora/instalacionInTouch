@@ -53,18 +53,20 @@ Ahora debemos ejecutar el script de instalación, si queremos instalar el progra
 
 ```bash
 $ sh /home/pi/install/auto-install.sh -p password_para_pi -q password_para_dev
-$ sh /home/pi/install/auto-install-inmote.sh
+$ sh /home/pi/install/auto-install-environment.sh
 $ source /home/pi/.bashrc
-$ sh /home/pi/install/auto-install-update.sh
+$ sh /home/pi/install/auto-install-platforms.sh
+$ sh /home/pi/install/final-install.sh
+$ sudo reboot
 ```
 
 Si el intouch es para desarrollo se debe ejecutar con las siguientes flags
 
 ```bash
 $ sh /home/pi/install/auto-install.sh -d 1 -p password_para_pi -q password_para_dev
-$ sh /home/pi/install/auto-install-inmote.sh -d 1 -i IP_INCLOUD_DESARROLLO
+$ sh /home/pi/install/auto-install-environment.sh -d 1 -i IP_INCLOUD_DESARROLLO
 $ source /home/pi/.bashrc
-$ sh /home/pi/install/auto-install-update.sh
+$ sh /home/pi/install/auto-install-platforms.sh
 ```
 
 Si usted sigue estos pasos no es necesario que continue leyendo esta guía pues todo se realizará de manera automática.
@@ -457,19 +459,25 @@ $ touch /home/pi/software/updates.txt
 **Es muy importante NO terminar las rutas, tanto URL como de archivo con un `/` al final**
 
 ## 11. Crear cron Job para updater
+
+## crear archivo de validacción de in-updater
+```bash
+$ touch /home/pi/software/in-updater-file.txt
+```
+
 ### Primero se debe crear el archivo de ejecución del updater
 ```bash 
 $ vim /home/pi/software/runAuth
 
 #!/bin/sh
-$(which python) /home/pi/software/in-updater/main.pyc
+$$(which python) /home/pi/software/$(cat /home/pi/software/in-updater-file.txt)/main.pyc
 ```
 
 ```bash 
 $ vim /home/pi/software/runUpdate
 
 #!/bin/sh
-$(which python) /home/pi/software/in-updater/update.pyc
+$(which python) /home/pi/software/$(cat /home/pi/software/in-updater-file.txt)/update.pyc
 ```
 
 ### Ahora crear la carpeta para el firmware de actualización
