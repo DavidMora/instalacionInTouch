@@ -24,6 +24,10 @@ $ sudo dd bs=1m if=XXXX-XX-XX-raspbian-stretch.img of=/dev/r<NAME OF DISK> conv=
 # USAR SCRIPT AUTOMATICO
 Para usar el script automático es necesario haber incluido los archivos `.pyc` del modulo de inupdater en la carpeta `./inpudater` de este proyecto.
 
+El repo de inupdater es https://github.com/DavidMora/linuxOTAComptiblwUpdater
+
+Sin embargo, los pyc pueden ser descargados de la carpeta de firmwares de intelligence usando scp
+
 Para usar el script automático se debe ejecutar el script `create-release.sh` de este directorio, luego se debe crear un servidor apache.
 
 ```bash
