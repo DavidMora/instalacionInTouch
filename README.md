@@ -60,7 +60,7 @@ $ sh /home/pi/install/auto-install.sh -p password_para_pi -q password_para_dev
 $ sh /home/pi/install/auto-install-environment.sh
 $ source /home/pi/.bashrc
 $ sh /home/pi/install/auto-install-platforms.sh
-$ sh /home/pi/install/final-install.sh
+$ sh /home/pi/install/auto-install-final-install.sh
 $ sudo reboot
 ```
 
