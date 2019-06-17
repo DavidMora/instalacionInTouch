@@ -28,7 +28,9 @@ El repo de inupdater es https://github.com/DavidMora/linuxOTAComptiblwUpdater
 
 Sin embargo, los pyc pueden ser descargados de la carpeta de firmwares de intelligence usando scp
 
-Para usar el script automático se debe ejecutar el script `create-release.sh` de este directorio, luego se debe crear un servidor apache.
+Se  debe haber incluido los certificados tipo `intouch` en la carperta certificates. Tenga en cuenta que el archivo `.lst` se debe llamar `list.lst`
+
+Para usar el script automático se debe ejecutar el script `create-release.sh` de este directorio, luego se debe crear un servidor apache. 
 
 ```bash
 $ ./create-release.sh
